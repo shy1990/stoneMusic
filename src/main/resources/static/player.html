@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>播放界面</title>
+</head>
+<body>
+<video id="video" controls="" autoplay="" name="media"><source id="source" src="" type="audio/mp4"></video>
+<button id="next">下一首</button>
+<script src="//cdn.bootcss.com/jquery/1.11.1/jquery.min.js"></script>
+<script>
+    $(function(){
+        var intv
+        $("#video").on('ended',function(){
+            pop(next);
+        })
+        function next(){
+            $.get('/next',function(data){
+                if(data){
+                    if(intv){
+                        clearInterval(intv)
+                    }
+                    $("#source").attr('src','http://'+data)
+                    $("#video").load()
+                }else{
+                    if(!intv){
+                        intv=setInterval(next,1000)
+                    }
+                }
+
+            })
+
+        }
+        function pop(cb){
+            $.get("/pop",function(){
+                if(cb){
+                    cb()
+                }
+            })
+        }
+
+        $("#next").click(function(){
+            pop(next);
+        })
+        next();
+
+    })
+</script>
+</body>
+</html>

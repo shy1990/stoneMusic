@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>复仇者联盟点歌系统</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- 新 Bootstrap 核心 CSS 文件 -->
+    <link rel="stylesheet" href="//cdn.bootcss.com/bootstrap/3.3.0/css/bootstrap.min.css">
+
+    <!-- 可选的Bootstrap主题文件（一般不用引入） -->
+    <link rel="stylesheet" href="//cdn.bootcss.com/bootstrap/3.3.0/css/bootstrap-theme.min.css">
+</head>
+<body >
+
+<div id="app" class="container-fluid">
+    <p>请使用极速模式,搜索歌曲,双击添加到播放序列.</p>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="input-group">
+                <input v-model="w" type="text" class="form-control">
+      <span class="input-group-btn">
+        <button @click="search" class="btn btn-default" type="button">搜索</button>
+      </span>
+            </div>
+            <table class="table table-hover">
+                <tr v-for="(song,i) in results" @dblclick="select(i)" v-if="song.songurl">
+                    <td>{{song.songname}}</td>
+                    <td>{{song.singer[0].name}}</td>
+                </tr>
+            </table>
+        </div>
+        <div class="col-md-8">
+            <h2>播放序列</h2>
+            <table class="table table-hover">
+                <tr v-for="(song,i) in songs">
+                    <td>{{i}}</td>
+                    <td>{{song.name}}</td>
+                    <td>{{song.singer}}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- jQuery文件。务必在bootstrap.min.js 之前引入 -->
+<script src="//cdn.bootcss.com/jquery/1.11.1/jquery.min.js"></script>
+
+<!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+<script src="//cdn.bootcss.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
+
+<script src="//cdn.bootcss.com/vue/2.1.3/vue.min.js"></script>
+<script>
+    new Vue({
+        el:"#app",
+        data:{
+            w:'',
+            results:[],
+            songs:[],
+        },
+        created:function(){
+            this.updateSongs()
+            setInterval(this.updateSongs,3000)
+        },
+        methods:{
+            search:function(){
+                var that=this
+                $.getJSON("/search",{name:that.w},function(data){
+                    console.log(JSON.stringify(data.data.song.list))
+                    that.results=data.data.song.list
+                });
+            },
+            select:function(i){
+                var that=this
+                var song=this.results[i]
+                $.post("/add",{name:song.songname,url:song.songurl,singer:song.singer[0].name},function(data){
+                    that.updateSongs()
+                    alert("点播成功,等着吧")
+                })
+            },
+            updateSongs:function(){
+                var that=this
+                $.getJSON("/songs",function(data){
+                    that.songs=data
+                })
+            }
+        }
+    })
+
+</script>
+</body>
+</html>
